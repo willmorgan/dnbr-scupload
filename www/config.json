@@ -1,7 +1,9 @@
 {
 	"settings": {
 		"rss_feed": "http://feeds.feedburner.com/dnbradioarchive.xml",
-		"soundcloud_user": "eXswitch"
+		"soundcloud_user": "eXswitch",
+		"server": "me.dev.willmorgan.co.uk:8080",
+		"local_directory": "../test-data"
 	},
 	"credentials": {
 		"soundcloud": {
