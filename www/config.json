@@ -1,0 +1,11 @@
+{
+	"settings": {
+		"rss_feed": "http://feeds.feedburner.com/dnbradioarchive.xml"
+	},
+	"credentials": {
+		"soundcloud": {
+			"client_id": "",
+			"client_secret": ""
+		}
+	}
+}
