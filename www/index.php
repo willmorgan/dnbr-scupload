@@ -9,9 +9,11 @@
 
 include 'vendor/autoload.php';
 include 'app/SCUpload.php';
+include 'app/FeedReader.php';
 
 use Slim\Slim;
 use Njasm\Soundcloud;
+use SCUpload\SCUpload;
 
 echo '<pre>';
 
@@ -68,6 +70,15 @@ $app->get('/oauth2callback', function() use($app) {
 	catch(Exception $e) {
 		echo 'Error occurred ('.$e->getMessage().'). <a href="/get-token">Start again</a>?<br>';
 	}
+});
+
+/**
+ * Web CLI
+ * Just a placeholder until I find a nice CLI environment runner
+ */
+$app->get('/webcli', function() use($app) {
+	$feed = $app->getFeedReader()->getEntries();
+	var_dump($feed);
 });
 
 $app->run();

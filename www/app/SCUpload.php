@@ -5,6 +5,8 @@
  * @author @willmorgan
  */
 
+namespace SCUpload;
+
 use Slim\Slim;
 use Njasm\Soundcloud;
 
@@ -56,7 +58,7 @@ class SCUpload extends Slim {
 	public function loadConfig($kind, $file) {
 		$decoded = json_decode(file_get_contents($file), true);
 		if(is_null($decoded)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'Could not load config file, maybe ' . $file . ' is malformed'
 			);
 		}
@@ -98,11 +100,11 @@ class SCUpload extends Slim {
 		$scConfig = $this->app_config['credentials']['soundcloud'];
 		$response = $sc->codeForToken($code)->bodyObject();
 		if(empty($response->access_token) || strpos($response->scope, 'non-expiring') === false) {
-			throw new LogicException('Scope must be non-expiring, or no access token response');
+			throw new \LogicException('Scope must be non-expiring, or no access token response');
 		}
 		$token = $response->access_token;
 		if(!$this->isTokenValid($token)) {
-			throw new LogicException('Logged in as the wrong user');
+			throw new \LogicException('Logged in as the wrong user');
 		}
 		$this->saveOAuthToken($token);
 		return true;
@@ -135,6 +137,13 @@ class SCUpload extends Slim {
 			$scConfig['client_secret'],
 			$redirectURI
 		);
+	}
+
+	/**
+	 * @return FeedReader
+	 */
+	public function getFeedReader() {
+		return new FeedReader($this);
 	}
 
 }

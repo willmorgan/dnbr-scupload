@@ -8,6 +8,7 @@
 	"require": {
 		"slim/slim": "dev-master",
 		"njasm/soundcloud": "~2.1.1",
+		"fastfeed/fastfeed": "0.3.0",
 		"php": "~5.4"
 	}
 }
