@@ -6,6 +6,7 @@
 		}
 	],
 	"require": {
+		"slim/slim": "dev-master",
 		"njasm/soundcloud": "~2.1.1",
 		"php": "~5.4"
 	}
