@@ -13,11 +13,6 @@ use SCUpload\SCUpload;
 class Track {
 
 	/**
-	 * @var SCUpload
-	 */
-	protected $app;
-
-	/**
 	 * See https://developers.soundcloud.com/docs/api/reference#tracks
 	 * Delivered to SCUpload in JSON format
 	 * @var array
@@ -74,6 +69,12 @@ class Track {
 	);
 
 	/**
+	 * sha1 ID for use when mediating between the archive and soundcloud
+	 * @var string
+	 */
+	protected $client_id;
+
+	/**
 	 * @var string URL or path to filename - contents used with PUT asset_data
 	 */
 	protected $audio_source;
@@ -82,10 +83,6 @@ class Track {
 	 * @var string URL or path to image - contents used with PUT artwork_data
 	 */
 	protected $image_source;
-
-	public function __construct(SCUpload $app) {
-		$this->app = $app;
-	}
 
 	public function loadSoundcloud(array $data) {
 		$this->sc_metadata = array_merge($this->sc_metadata, $data);
@@ -102,31 +99,17 @@ class Track {
 		return $this;
 	}
 
-	/**
-	 * Write this object to Soundcloud
-	 */
-	public function write() {
-		if(!$this->sc_metadata['id']) {
-			$this->insert();
-		}
-		else {
-			$this->update();
-		}
+	public function setClientID($hash) {
+		$this->client_id = $hash;
 		return $this;
 	}
 
-	/**
-	 * Create this resource
-	 */
-	protected function insert() {
-
+	public function getClientID() {
+		return $this->client_id;
 	}
 
-	/**
-	 * Update this resource
-	 */
-	protected function update() {
-
+	public function getSoundcloudData() {
+		return $this->sc_metadata;
 	}
 
 }

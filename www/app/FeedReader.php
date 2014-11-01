@@ -73,6 +73,7 @@ class FeedReader {
 		}
 		$track->loadSoundcloud($fields);
 		$track->setAudioSource($item->getExtra('media'));
+		$track->setClientID(sha1($item->getId()));
 		return $track;
 	}
 
