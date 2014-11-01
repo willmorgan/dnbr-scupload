@@ -1,6 +1,7 @@
 {
 	"settings": {
-		"rss_feed": "http://feeds.feedburner.com/dnbradioarchive.xml"
+		"rss_feed": "http://feeds.feedburner.com/dnbradioarchive.xml",
+		"soundcloud_user": "eXswitch"
 	},
 	"credentials": {
 		"soundcloud": {
