@@ -118,6 +118,15 @@ class SCUpload extends Slim {
 	 */
 	public function saveOAuthToken($token) {
 		$this->run_config['soundcloud']['oauth_token'] = $token;
+		$this->persistRunConfig();
+		return $this;
+	}
+
+	/**
+	 * Save the run config to the JSON file
+	 * @return $this
+	 */
+	public function persistRunConfig() {
 		file_put_contents(
 			$this->sc_settings['run_config'],
 			json_encode($this->run_config)

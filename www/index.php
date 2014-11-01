@@ -77,7 +77,9 @@ $app->get('/oauth2callback', function() use($app) {
  * Just a placeholder until I find a nice CLI environment runner
  */
 $app->get('/webcli', function() use($app) {
-	$feed = $app->getFeedReader()->getEntries();
+	$reader = $app->getFeedReader();
+	$feed = $reader->getTracks();
+	$reader->setLastRun(time());
 	var_dump($feed);
 });
 
