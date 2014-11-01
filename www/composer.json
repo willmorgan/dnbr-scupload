@@ -1,0 +1,12 @@
+{
+	"name": "DNBRadio SoundCloud Uploader",
+	"authors": [
+		{
+			"name": "@willmorgan"
+		}
+	],
+	"require": {
+		"njasm/soundcloud": "~2.1.1",
+		"php": "~5.4"
+	}
+}
