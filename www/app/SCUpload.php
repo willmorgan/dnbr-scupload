@@ -141,11 +141,13 @@ class SCUpload extends Slim {
 	public function getSoundcloud() {
 		$scConfig = $this->app_config['credentials']['soundcloud'];
 		$redirectURI = 'http://' . $this->app_config['settings']['server'] . '/oauth2callback';
-		return new Soundcloud\SoundcloudFacade(
+		$facade = new Soundcloud\SoundcloudFacade(
 			$scConfig['client_id'],
 			$scConfig['client_secret'],
 			$redirectURI
 		);
+		$facade->setAccessToken($this->oauth_token);
+		return $facade;
 	}
 
 	/**
