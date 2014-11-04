@@ -94,6 +94,10 @@ class Track {
 		return $this;
 	}
 
+	public function getAudioSource() {
+		return $this->audio_source;
+	}
+
 	public function setImageSource($source) {
 		$this->image_source = $source;
 		return $this;
@@ -110,6 +114,18 @@ class Track {
 
 	public function getSoundcloudData() {
 		return $this->sc_metadata;
+	}
+
+	/**
+	 * Wrap the values in track[] for the Soundcloud API
+	 * @return array
+	 */
+	public function getCreateData() {
+		$data = array();
+		foreach($this->sc_metadata as $key => $value) {
+			$data['track['.$key.']'] = $value;
+		}
+		return $data;
 	}
 
 }
