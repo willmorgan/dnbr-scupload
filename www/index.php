@@ -10,10 +10,12 @@
 include 'vendor/autoload.php';
 include 'app/SCUpload.php';
 include 'app/FeedReader.php';
+include 'app/Track/Writer.php';
 
 use Slim\Slim;
 use Njasm\Soundcloud;
 use SCUpload\SCUpload;
+use SCUpload\Track;
 
 echo '<pre>';
 
@@ -37,6 +39,7 @@ $app->get('/', function() use($app) {
 		'app_config_is_readable' => file_exists('config.json'),
 		'run_config_is_readable' => file_exists('run_config.json'),
 		'run_config_is_writable' => is_writable('run_config.json'),
+		'tmp_dir_is_writable' => is_writable($app->app_config['settings']['tmp_directory']),
 		'has_valid_oauth_token' => $app->isTokenValid(),
 	);
 	echo '<h3>Instance status</h3>';
@@ -78,9 +81,11 @@ $app->get('/oauth2callback', function() use($app) {
  */
 $app->get('/webcli', function() use($app) {
 	$reader = $app->getFeedReader();
-	$feed = $reader->getTracks();
+	$reader->setLastRun(1414783499);
+	$tracks = $reader->getTracks();
 	$reader->setLastRun(time());
-	var_dump($feed);
+	$writer = new Track\Writer($app, $tracks);
+	$writer->write();
 });
 
 $app->run();
