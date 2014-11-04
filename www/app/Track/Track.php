@@ -123,7 +123,9 @@ class Track {
 	public function getCreateData() {
 		$data = array();
 		foreach($this->sc_metadata as $key => $value) {
-			$data['track['.$key.']'] = $value;
+			if(!is_null($value)) {
+				$data['track['.$key.']'] = $value;
+			}
 		}
 		return $data;
 	}
