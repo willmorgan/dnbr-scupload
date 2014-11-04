@@ -15,6 +15,11 @@ use FastFeed\Item;
 
 class PodcastFeedParser extends RSSParser implements ParserInterface
 {
+
+    protected static $namespace_prefix_map = array(
+        'media' => 'http://search.yahoo.com/mrss/',
+    );
+
     /**
      * We need to get the feedburner link as that's the MP3.
      * {@inheritdoc}
@@ -22,7 +27,7 @@ class PodcastFeedParser extends RSSParser implements ParserInterface
 	protected function getPropertiesMapping()
 	{
 		return array_merge(array(
-			'setMedia' => 'feedburner:origEnclosureLink',
+			'setMedia' => 'media:content',
 		), parent::getPropertiesMapping());
 	}
 
@@ -35,18 +40,35 @@ class PodcastFeedParser extends RSSParser implements ParserInterface
 		if(strpos($tagName, ':') === false) {
 			return parent::getNodeValueByTagName($node, $tagName);
         }
-       	$results = $node->getElementsByTagNameNS('*', $tagName);
+        list($namespacePrefix, $tagName) = explode(':', $tagName);
+       	$results = $node->getElementsByTagNameNS(
+            static::$namespace_prefix_map[$namespacePrefix],
+            $tagName
+        );
         for ($i = 0; $i < $results->length; $i++) {
             $result = $results->item($i);
-            if (!$result->nodeValue) {
+            $value = $this->extractNodeValue(
+                $result,
+                $tagName,
+                $namespacePrefix
+            );
+            if($value) {
+                return $value;
+            }
+            else {
                 continue;
             }
-
-            return $result->nodeValue;
         }
 
         return false;
 	}
+
+    protected function extractNodeValue(DOMElement $node, $tagName, $namespace = null) {
+        if($tagName == 'content' && $namespace == 'media') {
+            return $node->getAttribute('url');
+        }
+        return $node->nodeValue;
+    }
 
     /**
      * Override so we can chain a setMedia call with Item->setExtra
