@@ -42,6 +42,7 @@ class FeedReader {
 	 * @return array<SCUpload\Track>
 	 */
 	public function getTracks() {
+		$lastRun = $this->getLastRun();
 		$fastFeed = Factory::create();
 		$fastFeed->popParser();
 		$fastFeed->pushParser(
@@ -55,8 +56,11 @@ class FeedReader {
 			$this->app->app_config['settings']['rss_feed']
 		);
 		$tracks = array();
-		foreach($fastFeed->fetch('default') as $item) {
-			$tracks[] = $this->exportToTrack($item);
+		$items = $fastFeed->fetch('default');
+		foreach($items as $item) {
+			if($lastRun < $item->getDate()->getTimestamp()) {
+				$tracks[] = $this->exportToTrack($item);
+			}
 		}
 		return $tracks;
 	}
