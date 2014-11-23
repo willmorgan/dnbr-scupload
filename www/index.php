@@ -81,7 +81,6 @@ $app->get('/oauth2callback', function() use($app) {
  */
 $app->get('/webcli', function() use($app) {
 	$reader = $app->getFeedReader();
-	$reader->setLastRun(1414783499);
 	$tracks = $reader->getTracks();
 	$reader->setLastRun(time());
 	$writer = new Track\Writer($app, $tracks);
