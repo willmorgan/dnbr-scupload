@@ -53,7 +53,6 @@ class Writer {
 			$cacheFileName,
 			$track->getCreateData()
 		);
-// ;)
 var_dump($response->bodyRaw());
 	}
 
