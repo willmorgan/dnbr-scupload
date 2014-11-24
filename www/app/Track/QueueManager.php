@@ -14,22 +14,8 @@ class QueueManager {
 
 	protected $app;
 
-	protected $db;
-
 	public function __construct(SCUpload $app) {
 		$this->app = $app;
-	}
-
-	protected function db() {
-		if(!isset($this->db)) {
-			$config = $this->app->app_config['credentials']['queue'];
-			$this->db = new PDO(
-				$config['dsn'],
-				$config['username'],
-				$config['password']
-			);
-		}
-		return $this->db;
 	}
 
 	/**
