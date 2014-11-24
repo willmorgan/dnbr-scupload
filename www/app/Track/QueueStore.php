@@ -7,7 +7,7 @@
  */
 namespace SCUpload\Track;
 
-use SCUpload;
+use SCUpload\SCUpload;
 use JQJob;
 use JQStore;
 use JQManagedJob;
@@ -92,13 +92,7 @@ class QueueStore implements JQStore {
 	}
 
     /**
-     * Add a JQJob to the queue.
-     *
-     * Will create a new JQManagedJob to manage the job and add it to the queue.
-     *
-     * @param object JQJob
-     * @return object JQManagedJob
-     * @throws object Exception
+     * {@inheritdoc}
      */
 	public function enqueue(JQJob $inputJob) {
 		$job = new JQManagedJob($this, $inputJob);

@@ -17,43 +17,57 @@ class Writer {
 	 */
 	protected $app;
 
+	protected $track;
+
 	/**
 	 * @param array $tracks
 	 */
-	public function __construct(SCUpload $app, array $tracks) {
+	public function __construct(SCUpload $app, Track $track) {
 		$this->app = $app;
-		$this->tracks = $tracks;
-	}
-
-	/**
-	 * Write this object to Soundcloud
-	 */
-	public function write() {
-		foreach($this->tracks as $track) {
-			$this->writeTrack($track);
-		}
+		$this->track = $track;
 	}
 
 	/**
 	 * Ideally this is where the work is parallelized.
 	 * Upload the track to Soundcloud and do some cleanup.
 	 * Should utilise the Slim log interface to report back on errors.
-	 * @param Track $track to upload
+	 * @throws Exception
 	 * @return void
 	 */
-	protected function writeTrack(Track $track) {
-		$tmpDir = $this->app->app_config['settings']['tmp_directory'];
-		$cacheFileName = implode('/', array($tmpDir, $track->getClientID()));
+	public function write() {
+		$track = $this->track;
+		$cacheFileName = $this->getCacheFilename();
 		// Check if the file already exists in our temp directory. If not, download
 		if(!is_readable($cacheFileName)) {
 			$this->fetchTrackFile($cacheFileName, $track);
+			if(!is_readable($cacheFileName)) {
+				throw new Writer_PodcastNotFoundException(
+					'Could not read the downloaded podcast'
+				);
+			}
 		}
 		$soundcloud = $this->app->getSoundcloud();
-		$response = $soundcloud->upload(
-			$cacheFileName,
-			$track->getCreateData()
-		);
-var_dump($response->bodyRaw());
+		try {
+			$soundcloud->upload(
+				$cacheFileName,
+				$track->getCreateData()
+			);
+		}
+		catch(Exception $e) {
+			throw new Writer_SoundcloudUploadFailedException(
+				$e->getMessage(),
+				$e->getCode(),
+				$e
+			);
+		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCacheFilename() {
+		$tmpDir = $this->app->app_config['settings']['tmp_directory'];
+		return implode('/', array($tmpDir, $track->getClientID()));
 	}
 
 	/**
@@ -71,7 +85,16 @@ var_dump($response->bodyRaw());
 			CURLINFO_HEADER_OUT => false,
 			CURLOPT_FILE => $fh,
 		));
-		curl_exec($ch);
+		$curlSuccess = curl_exec($ch);
+		curl_close($ch);
+		if(!$curlSuccess) {
+			throw new Writer_PodcastDownloadException();
+		}
 	}
 
+
 }
+
+class Writer_PodcastDownloadException extends Exception { }
+class Writer_PodcastNotFoundException extends Exception { }
+class Writer_SoundcloudUploadFailedException extends Exception { }
