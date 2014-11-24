@@ -4,8 +4,55 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1cba84821c1b8b9933d6a43ecc8f3a6a",
+    "hash": "9ee5c645c927c3e18797ffcbc782ffbc",
     "packages": [
+        {
+            "name": "apinstein/jqjobs",
+            "version": "v1.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/apinstein/jqjobs.git",
+                "reference": "9083f5f2fc4af5cbf347a318d5c5d614010ede37"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/apinstein/jqjobs/zipball/9083f5f2fc4af5cbf347a318d5c5d614010ede37",
+                "reference": "9083f5f2fc4af5cbf347a318d5c5d614010ede37",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.0"
+            },
+            "require-dev": {
+                "apinstein/mp": "v1.0.3",
+                "phpunit/phpunit": "dev-testdox-topic-on-3.7",
+                "propel/propel1": "=1.6.7"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alan Pinstein",
+                    "email": "apinstein@mac.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Async job manager for PHP.",
+            "homepage": "http://github.com/apinstein/jqjobs",
+            "keywords": [
+                "job",
+                "queue"
+            ],
+            "time": "2014-10-15 19:19:39"
+        },
         {
             "name": "desarrolla2/cache",
             "version": "v1.7.0",
