@@ -12,5 +12,10 @@
 		"fastfeed/fastfeed": "0.3.0",
 		"apinstein/jqjobs": "v1.2.3",
 		"php": "~5.4"
+	},
+	"autoload": {
+		"psr-4": {
+			"SCUpload\\": "app/"
+		}
 	}
 }

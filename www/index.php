@@ -1,20 +1,11 @@
 <?php
 
 /**
- * SoundCloud oauth step
- * There's no nice way of getting an oauth token via a dashboard,
- * So we have to implement it in code (-1 hour of my life!!)
  * @author @willmorgan
  */
 
-include 'vendor/autoload.php';
-include 'app/SCUpload.php';
-include 'app/FeedReader.php';
-include 'app/Track/Writer.php';
-include 'app/Track/QueueManager.php';
+require_once 'vendor/autoload.php';
 
-use Slim\Slim;
-use Njasm\Soundcloud;
 use SCUpload\SCUpload;
 use SCUpload\Track;
 
@@ -28,7 +19,7 @@ $app = new SCUpload(array(
 /**
  *
  *
- * ROUTES (and lots of functional code hahahahahahah)
+ * ROUTES (and lots of functional code...)
  *
  *
  */
@@ -86,8 +77,6 @@ $app->get('/webcli', function() use($app) {
 	$reader->setLastRun(time());
 	$queue = new Track\QueueManager($app);
 	$queue->addTracks($tracks);
-	$writer = new Track\Writer($app, $tracks);
-	$writer->write();
 });
 
 $app->run();
