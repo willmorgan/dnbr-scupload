@@ -11,6 +11,7 @@ include 'vendor/autoload.php';
 include 'app/SCUpload.php';
 include 'app/FeedReader.php';
 include 'app/Track/Writer.php';
+include 'app/Track/QueueManager.php';
 
 use Slim\Slim;
 use Njasm\Soundcloud;
@@ -83,6 +84,8 @@ $app->get('/webcli', function() use($app) {
 	$reader = $app->getFeedReader();
 	$tracks = $reader->getTracks();
 	$reader->setLastRun(time());
+	$queue = new Track\QueueManager($app);
+	$queue->addTracks($tracks);
 	$writer = new Track\Writer($app, $tracks);
 	$writer->write();
 });
