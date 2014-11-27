@@ -7,7 +7,8 @@
  */
 namespace SCUpload\Track;
 
-use JSManagedJob;
+use SCUpload\SCUpload;
+use JQManagedJob;
 use JQJob;
 
 class UploadJob implements JQJob {
@@ -21,13 +22,17 @@ class UploadJob implements JQJob {
 		$this->track = $track;
 	}
 
+    public function setApp(SCUpload $app) {
+        $this->app = $app;
+        return $this;
+    }
+
 	/**
 	 * Keep the variables when serialized
 	 * @return array
 	 */
 	public function __sleep() {
 		return array(
-			'app',
 			'track'
 		);
 	}
@@ -75,10 +80,10 @@ class UploadJob implements JQJob {
     public function statusDidChange(JQManagedJob $mJob, $oldStatus, $message) {
     	$logger = $this->app->getLog();
     	if($message === JQManagedJob::STATUS_FAILED) {
-    		$logger->error($mJob);
+    		$logger->error($message, $mJob->toArray());
     	}
     	else {
-    		$logger->info($mJob);
+    		$logger->info($message, $mJob->toArray());
     	}
     }
 
@@ -93,7 +98,7 @@ class UploadJob implements JQJob {
      * {@inheritdoc}
      */
     public function coalesceId() {
-    	return __CLASS__ . '_' . $this->track->getClientID();
+    	return 'UploadJob_'.$this->track->getClientID();
     }
 
 }

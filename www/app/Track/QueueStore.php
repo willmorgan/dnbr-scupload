@@ -8,6 +8,7 @@
 namespace SCUpload\Track;
 
 use SCUpload\SCUpload;
+use PDO;
 use JQJob;
 use JQStore;
 use JQManagedJob;
@@ -45,8 +46,30 @@ class QueueStore implements JQStore {
 				$config['username'],
 				$config['password']
 			);
+			$this->db->exec("SET sql_mode = 'ANSI'");
 		}
 		return $this->db;
+	}
+
+	/**
+	 * Try to query (or exec, by overriding $method) and spew out the
+	 * results if bad things happen.
+	 * @throws \Exception
+	 * @return mixed
+	 */
+	protected function queryOrFail($sql, $method = 'query') {
+		$db = $this->db();
+		$result = $db->$method($sql);
+		if(!$result) {
+			throw new \Exception(
+				sprintf(
+					'Failed to execute query: (%s) "%s"',
+					$db->errorInfo()[2],
+					var_export($sql, 1)
+				)
+			);
+		}
+		return $result;
 	}
 
 	/**
@@ -79,7 +102,9 @@ class QueueStore implements JQStore {
 	}
 
 	/**
-	 * Restore a JQManagedJob from a database row
+	 * Restore a JQManagedJob from a database row and re-set the app dependencies
+	 * on it. This is just because Slim apps don't serialize so well and so the app
+	 * property needs to be discarded on sleep.
 	 * @throws JQStore_JobNotFoundException if not found
 	 */
 	protected function restore($row) {
@@ -87,7 +112,8 @@ class QueueStore implements JQStore {
 			throw new JQStore_JobNotFoundException();
 		}
 		$job = new JQManagedJob($this);
-		$job->fromArray(unserialize($row['object']));
+		$job->fromArray(unserialize(base64_decode($row['object'])));
+		$job->getJob()->setApp($this->app);
 		return $job;
 	}
 
@@ -99,15 +125,29 @@ class QueueStore implements JQStore {
 		if($job->getStatus() === JQManagedJob::STATUS_UNQUEUED) {
 			$job->setStatus(JQManagedJob::STATUS_QUEUED);
 		}
+
+		if($existingJob = $this->existsJobForCoalesceId($job->coalesceId())) {
+			return $existingJob;
+		}
+
+		$jobID = md5(uniqid('JOB-', true));
+		$job->setJobId($jobID);
 		$db = $this->db();
+
 		$sql = sprintf(
-			'INSERT INTO "%s" (id, state, object) VALUES (\'%s\', \'%s\', \'%s\')',
+			"INSERT INTO \"%s\" (id, coalesce_id, state, object) VALUES (
+				%s,
+				%s,
+				%s,
+				%s
+			);",
 			$this->sqlTable(),
 			$db->quote($job->getJobId()),
+			$db->quote($job->coalesceId()),
 			$db->quote($job->getStatus()),
-			serialize($job->toArray())
+			$db->quote(base64_encode(serialize($job->toArray())))
 		);
-		$this->db()->exec($sql);
+		$this->queryOrFail($sql, 'exec');
 		return $job;
 	}
 
@@ -127,15 +167,16 @@ class QueueStore implements JQStore {
 	}
 
 	/**
-	 * @return boolean
+	 * @return mixed
 	 */
-	public function function existsJobForCoalesceId($coalesceId) {
-		$db = $this->db();
-		$sql = $this->selectSql(sprintf(
-			'"coalesce_id" = %s"',
-			$db->quote($coalesceId)
-		), 'COUNT(*)')
-		return (int) $db->query($sql)->fetchColumn() > 0;
+	public function existsJobForCoalesceId($coalesceId) {
+		try {
+			$job = $this->getByCoalesceId($coalesceId);
+			return $job;
+		}
+		catch(JQStore_JobNotFoundException $e) {
+		}
+		return null;
 	}
 
 	/**
@@ -235,8 +276,8 @@ class QueueStore implements JQStore {
 	 * {@inheritdoc}
 	 */
 	public function getByCoalesceId($coalesceId) {
-		$sql = $this->selectSql('coalesce_id = ' . $db->quote($coalesceId));
-		return $this->restore($this->db()->query($sql)->fetch());
+		$sql = $this->selectSql('"coalesce_id" = ' . $this->db()->quote($coalesceId));
+		return $this->restore($this->queryOrFail($sql)->fetch());
 	}
 
 	/**
@@ -248,8 +289,8 @@ class QueueStore implements JQStore {
 			'UPDATE "%s" SET "status" = %s, "object" = %s WHERE "id" = %s LIMIT 1',
 			$this->sqlTable(),
 			$db->quote($job->getStatus()),
-			serialize($job->toArray())
-			$db->quote($job->getJobId()),
+			serialize($job->toArray()),
+			$db->quote($job->getJobId())
 		);
 		$db->exec($sql);
 		return $job;
