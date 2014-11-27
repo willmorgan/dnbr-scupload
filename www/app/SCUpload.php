@@ -42,8 +42,8 @@ class SCUpload extends Slim {
 		$this->sc_settings = $settings;
 		// Load the config files: config is semi-portable;
 		// run_config should not be copied across instances
-		$this->loadConfig('run_config', $settings['run_config']);
-		$this->loadConfig('app_config', $settings['app_config']);
+		$this->loadConfig('run_config', $settings);
+		$this->loadConfig('app_config', $settings);
 
 		// Check if we have an oauth token.
 		$this->oauth_token = $this->run_config['soundcloud']['oauth_token'];
@@ -55,7 +55,11 @@ class SCUpload extends Slim {
 	 * @param string $file The JSON file
 	 * @return $this
 	 */
-	public function loadConfig($kind, $file) {
+	public function loadConfig($kind, $settings) {
+		if(empty($settings[$kind])) {
+			throw new \InvalidArgumentException('Please define a ' . $kind . ' property in $settings');
+		}
+		$file = $settings[$kind];
 		$decoded = json_decode(file_get_contents($file), true);
 		if(is_null($decoded)) {
 			throw new \InvalidArgumentException(
