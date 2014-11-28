@@ -35,6 +35,13 @@ class QueueStore implements JQStore {
 	}
 
 	/**
+	 * @return SCUpload $app
+	 */
+	public function getApp() {
+		return $this->app;
+	}
+
+	/**
 	 * Return or create the PDO connection
 	 * @return PDO
 	 */
@@ -163,9 +170,10 @@ class QueueStore implements JQStore {
 		$sql = $this->selectSql($select, '*', 'sequence', 1);
 		$result = $this->queryOrFail($sql);
 		$row = $result->fetch(PDO::FETCH_ASSOC);
-		if(!empty($row)) {
-			$this->addMutex($row['id']);
+		if(empty($row)) {
+			return false;
 		}
+		$this->addMutex($row['id']);
 		return $this->restore($row);
 	}
 

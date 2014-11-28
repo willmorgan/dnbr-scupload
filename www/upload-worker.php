@@ -9,24 +9,29 @@ require_once 'vendor/autoload.php';
 
 use SCUpload\Track;
 use SCUpload\SCUpload;
-use SCUpload\Track\QueueManager;
+use SCUpload\UploadWorker;
+use SCUpload\Track\QueueStore;
 
-declare(ticks = 1);
+if(php_sapi_name() !== 'cli') {
+	exit(
+		'Must be run via CLI otherwise you can\'t easily terminate the worker'
+	);
+}
 
 $app = new SCUpload(array(
 	'run_config' => './run_config.json',
 	'app_config' => './config.json',
 	'log.writer' => new \Slim\LogWriter(fopen('../debug.log', 'a')),
-
 ));
 
-$manager = new QueueManager($app);
+$store = new QueueStore($app);
 
-$job = $manager->fetch();
+$worker = new UploadWorker($store);
 
-if(!$job) {
-	$app->getLog()->info('Nothing to upload, all jobs done!');
-	return;
+$check = $worker->sanityCheck();
+if($check !== true) {
+	echo $check . "\n\n(cwd = " . getcwd() . ")";
+	die;
 }
 
-$job->run($job);
+$worker->start();
