@@ -11,11 +11,10 @@ use SCUpload\SCUpload;
 use SCUpload\FeedReader;
 use SCUpload\Track\QueueManager;
 
-declare(ticks = 1);
-
 $app = new SCUpload(array(
 	'run_config' => './run_config.json',
 	'app_config' => './config.json',
+	'log.writer' => new \Slim\LogWriter(fopen('../feed-worker.log', 'a')),
 ));
 
 $manager = new QueueManager($app);
@@ -23,3 +22,5 @@ $manager = new QueueManager($app);
 $fetcher = new FeedReader($app);
 
 $manager->addTracks($fetcher->getTracks());
+
+$fetcher->setLastRun(time());

@@ -21,7 +21,7 @@ if(php_sapi_name() !== 'cli') {
 $app = new SCUpload(array(
 	'run_config' => './run_config.json',
 	'app_config' => './config.json',
-	'log.writer' => new \Slim\LogWriter(fopen('../debug.log', 'a')),
+	'log.writer' => new \Slim\LogWriter(fopen('../upload-worker.log', 'a')),
 ));
 
 $store = new QueueStore($app);

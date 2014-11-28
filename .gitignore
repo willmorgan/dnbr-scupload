@@ -1,4 +1,4 @@
 .svn
 .vagrant
 www/vendor
-debug.log
+*.log
