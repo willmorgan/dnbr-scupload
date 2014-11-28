@@ -37,7 +37,7 @@ class SCUpload extends Slim {
 	 * @param array $settings Must contain run_config and app_config params
 	 */
 	public function __construct(array $settings) {
-		parent::__construct();
+		parent::__construct($settings);
 		// Back up the settings (may be used later)
 		$this->sc_settings = $settings;
 		// Load the config files: config is semi-portable;
