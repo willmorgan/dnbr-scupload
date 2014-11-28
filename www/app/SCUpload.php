@@ -37,13 +37,13 @@ class SCUpload extends Slim {
 	 * @param array $settings Must contain run_config and app_config params
 	 */
 	public function __construct(array $settings) {
-		parent::__construct();
+		parent::__construct($settings);
 		// Back up the settings (may be used later)
 		$this->sc_settings = $settings;
 		// Load the config files: config is semi-portable;
 		// run_config should not be copied across instances
-		$this->loadConfig('run_config', $settings['run_config']);
-		$this->loadConfig('app_config', $settings['app_config']);
+		$this->loadConfig('run_config', $settings);
+		$this->loadConfig('app_config', $settings);
 
 		// Check if we have an oauth token.
 		$this->oauth_token = $this->run_config['soundcloud']['oauth_token'];
@@ -55,7 +55,11 @@ class SCUpload extends Slim {
 	 * @param string $file The JSON file
 	 * @return $this
 	 */
-	public function loadConfig($kind, $file) {
+	public function loadConfig($kind, $settings) {
+		if(empty($settings[$kind])) {
+			throw new \InvalidArgumentException('Please define a ' . $kind . ' property in $settings');
+		}
+		$file = $settings[$kind];
 		$decoded = json_decode(file_get_contents($file), true);
 		if(is_null($decoded)) {
 			throw new \InvalidArgumentException(
@@ -157,4 +161,34 @@ class SCUpload extends Slim {
 		return new FeedReader($this);
 	}
 
+	/**
+	 * Provides a cross platform way of ensuring all is well in the world of this app...
+	 * @throws SCUpload_ConfigException
+	 * @return array
+	 */
+	public function sanityCheck() {
+		$userSettings = $this->sc_settings;
+		$checks = array(
+			'app_config_path_readable' => is_readable($userSettings['app_config']),
+			'run_config_path_readable' => is_readable($userSettings['run_config']),
+			'run_config_path_writable' => is_writable($userSettings['run_config']),
+			'tmp_dir_path_writable' => is_writable($this->app_config['settings']['tmp_directory']),
+			'has_valid_oauth_token' => $this->isTokenValid(),
+		);
+		$configs = array(
+			'user_settings' => $userSettings,
+			'app_config' => $this->app_config,
+		);
+		foreach($checks as $checkID => $checkValue) {
+			if(!$checkValue) {
+				throw new SCUpload_ConfigException(
+					"Please check config: " . $checkID . "\n\n" . json_encode($configs)
+				);
+			}
+		}
+		return $checks;
+	}
+
 }
+
+class SCUpload_ConfigException extends \Exception { }

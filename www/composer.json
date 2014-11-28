@@ -1,5 +1,6 @@
 {
-	"name": "DNBRadio SoundCloud Uploader",
+	"name": "willmorgan/dnbr-scupload",
+	"description": "DNBRadio SoundCloud Uploader",
 	"authors": [
 		{
 			"name": "@willmorgan"
@@ -9,6 +10,12 @@
 		"slim/slim": "dev-master",
 		"njasm/soundcloud": "~2.1.1",
 		"fastfeed/fastfeed": "0.3.0",
+		"apinstein/jqjobs": "v1.2.3",
 		"php": "~5.4"
+	},
+	"autoload": {
+		"psr-4": {
+			"SCUpload\\": "app/"
+		}
 	}
 }

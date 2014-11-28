@@ -1,19 +1,11 @@
 <?php
 
 /**
- * SoundCloud oauth step
- * There's no nice way of getting an oauth token via a dashboard,
- * So we have to implement it in code (-1 hour of my life!!)
  * @author @willmorgan
  */
 
-include 'vendor/autoload.php';
-include 'app/SCUpload.php';
-include 'app/FeedReader.php';
-include 'app/Track/Writer.php';
+require_once 'vendor/autoload.php';
 
-use Slim\Slim;
-use Njasm\Soundcloud;
 use SCUpload\SCUpload;
 use SCUpload\Track;
 
@@ -27,7 +19,7 @@ $app = new SCUpload(array(
 /**
  *
  *
- * ROUTES (and lots of functional code hahahahahahah)
+ * ROUTES (and lots of functional code...)
  *
  *
  */
@@ -35,13 +27,12 @@ $app = new SCUpload(array(
  * Index page - shows some diagnostic info if stuff is wrong
  */
 $app->get('/', function() use($app) {
-	$checks = array(
-		'app_config_is_readable' => file_exists('config.json'),
-		'run_config_is_readable' => file_exists('run_config.json'),
-		'run_config_is_writable' => is_writable('run_config.json'),
-		'tmp_dir_is_writable' => is_writable($app->app_config['settings']['tmp_directory']),
-		'has_valid_oauth_token' => $app->isTokenValid(),
-	);
+	try {
+		$checks = $app->checkConfig();
+	}
+	catch(SCUpload_InvalidConfigException $e) {
+		// error found - but we handle this later
+	}
 	echo '<h3>Instance status</h3>';
 	echo '<ul>';
 	foreach($checks as $checkID => $checkValue) {
@@ -73,18 +64,6 @@ $app->get('/oauth2callback', function() use($app) {
 	catch(Exception $e) {
 		echo 'Error occurred ('.$e->getMessage().'). <a href="/get-token">Start again</a>?<br>';
 	}
-});
-
-/**
- * Web CLI
- * Just a placeholder until I find a nice CLI environment runner
- */
-$app->get('/webcli', function() use($app) {
-	$reader = $app->getFeedReader();
-	$tracks = $reader->getTracks();
-	$reader->setLastRun(time());
-	$writer = new Track\Writer($app, $tracks);
-	$writer->write();
 });
 
 $app->run();

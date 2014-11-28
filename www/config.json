@@ -6,6 +6,12 @@
 		"tmp_directory": "../tmp-uploads"
 	},
 	"credentials": {
+		"queue": {
+			"dsn": "mysql:host=localhost;port=3306;dbname=vagrant",
+			"table": "scupload_track_queue",
+			"username": "root",
+			"password": ""
+		},
 		"soundcloud": {
 			"client_id": "",
 			"client_secret": ""

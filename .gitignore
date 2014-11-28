@@ -1,3 +1,4 @@
 .svn
 .vagrant
 www/vendor
+*.log
