@@ -161,4 +161,34 @@ class SCUpload extends Slim {
 		return new FeedReader($this);
 	}
 
+	/**
+	 * Provides a cross platform way of ensuring all is well in the world of this app...
+	 * @throws SCUpload_ConfigException
+	 * @return array
+	 */
+	public function sanityCheck() {
+		$userSettings = $this->sc_settings;
+		$checks = array(
+			'app_config_path_readable' => is_readable($userSettings['app_config']),
+			'run_config_path_readable' => is_readable($userSettings['run_config']),
+			'run_config_path_writable' => is_writable($userSettings['run_config']),
+			'tmp_dir_path_writable' => is_writable($this->app_config['settings']['tmp_directory']),
+			'has_valid_oauth_token' => $this->isTokenValid(),
+		);
+		$configs = array(
+			'user_settings' => $userSettings,
+			'app_config' => $this->app_config,
+		);
+		foreach($checks as $checkID => $checkValue) {
+			if(!$checkValue) {
+				throw new SCUpload_ConfigException(
+					"Please check config: " . $checkID . "\n\n" . json_encode($configs)
+				);
+			}
+		}
+		return $checks;
+	}
+
 }
+
+class SCUpload_ConfigException extends \Exception { }

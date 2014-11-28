@@ -27,13 +27,12 @@ $app = new SCUpload(array(
  * Index page - shows some diagnostic info if stuff is wrong
  */
 $app->get('/', function() use($app) {
-	$checks = array(
-		'app_config_is_readable' => file_exists('config.json'),
-		'run_config_is_readable' => file_exists('run_config.json'),
-		'run_config_is_writable' => is_writable('run_config.json'),
-		'tmp_dir_is_writable' => is_writable($app->app_config['settings']['tmp_directory']),
-		'has_valid_oauth_token' => $app->isTokenValid(),
-	);
+	try {
+		$checks = $app->checkConfig();
+	}
+	catch(SCUpload_InvalidConfigException $e) {
+		// error found - but we handle this later
+	}
 	echo '<h3>Instance status</h3>';
 	echo '<ul>';
 	foreach($checks as $checkID => $checkValue) {
