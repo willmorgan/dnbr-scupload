@@ -48,10 +48,12 @@ class Writer {
 		}
 		$soundcloud = $this->app->getSoundcloud();
 		try {
-			$soundcloud->upload(
+			$response = $soundcloud->upload(
 				$cacheFileName,
 				$track->getCreateData()
 			);
+			$this->app->getLog()->debug($response->bodyRaw());
+			return $response;
 		}
 		catch(Exception $e) {
 			throw new Writer_SoundcloudUploadFailedException(
@@ -67,7 +69,7 @@ class Writer {
 	 */
 	public function getCacheFilename() {
 		$tmpDir = $this->app->app_config['settings']['tmp_directory'];
-		return implode('/', array($tmpDir, $track->getClientID()));
+		return implode('/', array($tmpDir, $this->track->getClientID()));
 	}
 
 	/**
@@ -95,6 +97,6 @@ class Writer {
 
 }
 
-class Writer_PodcastDownloadException extends Exception { }
-class Writer_PodcastNotFoundException extends Exception { }
-class Writer_SoundcloudUploadFailedException extends Exception { }
+class Writer_PodcastDownloadException extends \Exception { }
+class Writer_SoundcloudUploadFailedException extends \Exception { }
+class Writer_PodcastNotFoundException extends Writer_PodcastDownloadException { }

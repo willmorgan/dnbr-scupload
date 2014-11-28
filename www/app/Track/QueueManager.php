@@ -2,12 +2,13 @@
 
 /**
  * QueueManager
- * Handles pushing and acking Track objects from a central queue
+ * Handles pushing and fetching Track objects from a central queue
  */
 
 namespace SCUpload\Track;
 
 use SCUpload\SCUpload;
+use JQStore_JobNotFoundException;
 
 class QueueManager {
 
@@ -28,6 +29,20 @@ class QueueManager {
 			$job = new UploadJob($this->app, $track);
 			$this->store->enqueue($job);
 		}
+	}
+
+	/**
+	 * Provide a job to a worker.
+	 * @return JQManagedJob|null
+	 */
+	public function fetch() {
+		try {
+			$job = $this->store->next();
+			return $job;
+		}
+		catch(JQStore_JobNotFoundException $e) {
+		}
+		return null;
 	}
 
 }

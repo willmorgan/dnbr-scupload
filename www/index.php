@@ -67,16 +67,4 @@ $app->get('/oauth2callback', function() use($app) {
 	}
 });
 
-/**
- * Web CLI
- * Just a placeholder until I find a nice CLI environment runner
- */
-$app->get('/webcli', function() use($app) {
-	$reader = $app->getFeedReader();
-	$tracks = $reader->getTracks();
-	$reader->setLastRun(time());
-	$queue = new Track\QueueManager($app);
-	$queue->addTracks($tracks);
-});
-
 $app->run();

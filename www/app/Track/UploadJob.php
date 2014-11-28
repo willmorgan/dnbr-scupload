@@ -27,6 +27,10 @@ class UploadJob implements JQJob {
         return $this;
     }
 
+    public function getApp() {
+        return $this->app;
+    }
+
 	/**
 	 * Keep the variables when serialized
 	 * @return array
@@ -52,19 +56,52 @@ class UploadJob implements JQJob {
     	return new Writer($this->app, $this->track);
     }
 
+    public function getTrack() {
+        return $this->track;
+    }
+
     /**
      * {@inheritdoc}
      */
     public function run(JQManagedJob $job) {
     	// copy code from trackwriter, lulz
     	$writer = $this->getWriter();
-    	try {
-    		$writer->write();
-    		return JQManagedJob::STATUS_COMPLETED;
-    	}
-    	catch(Exception $e) {
-    		return JQManagedJob::STATUS_FAILED;
-    	}
+        $logger = $this->getApp()->getLog();
+        $track = $this->getTrack();
+
+        try {
+            $writer->write();
+            $logger->info(
+                'Podcast ' . $track->getField('title') . ' uploaded'
+            );
+            return JQManagedJob::STATUS_COMPLETED;
+        }
+        // Allow job to hang for later on known errors
+        catch(Track\Writer_PodcastDownloadException $e) {
+            $logger->warning(
+                'Podcast 404 or download error',
+                array(
+                    'exception' => $e,
+                )
+            );
+        }
+        catch(Track\Writer_SoundcloudUploadFailedException $e) {
+            $logger->warning(
+                'Soundcloud upload failed',
+                array(
+                    'exception' => $e,
+                )
+            );
+        }
+        catch(\Exception $e) {
+            $logger->critical(
+                'Unknown error',
+                array(
+                    'exception' => $e,
+                )
+            );
+        }
+        return JQManagedJob::STATUS_FAILED;
     }
 
     /**

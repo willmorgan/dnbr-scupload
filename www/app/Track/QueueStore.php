@@ -106,6 +106,7 @@ class QueueStore implements JQStore {
 	 * on it. This is just because Slim apps don't serialize so well and so the app
 	 * property needs to be discarded on sleep.
 	 * @throws JQStore_JobNotFoundException if not found
+	 * @return JQManagedJob
 	 */
 	protected function restore($row) {
 		if(!$row) {
@@ -156,13 +157,15 @@ class QueueStore implements JQStore {
 	 */
 	public function next($queueName = null) {
 		$select = sprintf(
-			'state = \'%s\'',
+			'state = \'%s\' AND mutex = 0',
 			JQManagedJob::STATUS_QUEUED
 		);
-		$sql = $this->selectSql($select, 'sequence', 1);
-		$result = $this->db()->query($sql);
+		$sql = $this->selectSql($select, '*', 'sequence', 1);
+		$result = $this->queryOrFail($sql);
 		$row = $result->fetch(PDO::FETCH_ASSOC);
-		$this->addMutex($row['id']);
+		if(!empty($row)) {
+			$this->addMutex($row['id']);
+		}
 		return $this->restore($row);
 	}
 
@@ -289,12 +292,11 @@ class QueueStore implements JQStore {
 			'UPDATE "%s" SET "status" = %s, "object" = %s WHERE "id" = %s LIMIT 1',
 			$this->sqlTable(),
 			$db->quote($job->getStatus()),
-			serialize($job->toArray()),
+			$db->quote(base64_encode(serialize($job->toArray()))),
 			$db->quote($job->getJobId())
 		);
 		$db->exec($sql);
 		return $job;
-
 	}
 
 	/**
