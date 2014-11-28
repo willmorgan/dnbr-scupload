@@ -89,6 +89,15 @@ class Track {
 		return $this;
 	}
 
+	/**
+	 * Get me some data from the soundcloud array
+	 * @param string $field
+	 * @return string
+	 */
+	public function getField($field) {
+		return isset($this->sc_metadata[$field]) ? $this->sc_metadata[$field] : '';
+	}
+
 	public function setAudioSource($source) {
 		$this->audio_source = $source;
 		return $this;
