@@ -27,12 +27,7 @@ $app = new SCUpload(array(
  * Index page - shows some diagnostic info if stuff is wrong
  */
 $app->get('/', function() use($app) {
-	try {
-		$checks = $app->checkConfig();
-	}
-	catch(SCUpload_InvalidConfigException $e) {
-		// error found - but we handle this later
-	}
+	$checks = $app->sanityCheck();
 	echo '<h3>Instance status</h3>';
 	echo '<ul>';
 	foreach($checks as $checkID => $checkValue) {
