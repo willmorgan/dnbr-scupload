@@ -46,7 +46,9 @@ class SCUpload extends Slim {
 		$this->loadConfig('app_config', $settings);
 
 		// Check if we have an oauth token.
-		$this->oauth_token = $this->run_config['soundcloud']['oauth_token'];
+		if(isset($this->run_config['soundcloud']['oauth_token'])) {
+			$this->oauth_token = $this->run_config['soundcloud']['oauth_token'];
+		}
 	}
 
 	/**
@@ -85,8 +87,12 @@ class SCUpload extends Slim {
 		}
 		$sc = $this->getSoundcloud();
 		$sc->setAccessToken($token);
-		$meResponse = $sc->get('/me')->asJson()->request()->bodyObject();
-		$tokenUser = $meResponse->username;
+		$meResponse = $sc->get('/me')->asJson()->request();
+		if($meResponse->getHttpCode() != 200) {
+			return false;
+		}
+		$body = $meResponse->bodyObject();
+		$tokenUser = $body->username;
 		$allowedUser = $this->app_config['settings']['soundcloud_user'];
 		return $tokenUser == $allowedUser;
 	}
@@ -101,6 +107,7 @@ class SCUpload extends Slim {
 	 */
 	public function setTokenFromOAuthCode($code) {
 		$sc = $this->getSoundcloud();
+		$sc->setAccessToken(null);
 		$scConfig = $this->app_config['credentials']['soundcloud'];
 		$response = $sc->codeForToken($code)->bodyObject();
 		if(empty($response->access_token) || strpos($response->scope, 'non-expiring') === false) {
